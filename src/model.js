@@ -42,9 +42,13 @@ class Model {
             modelTexturesId = localStorage.getItem("modelTexturesId");
         if (this.useCDN) {
             if (!this.modelList) await this.loadModelList();
+            if (this.modelList.models[modelId].length > 1) {
             const target = randomSelection(this.modelList.models[modelId]);
             loadlive2d("live2d", `${this.cdnPath}model/${target}/index.json`);
             showMessage("我的新衣服好看嘛？", 4000, 10);
+            } else {
+             showMessage("我还没有其他衣服呢！", 4000, 10);
+            }
         } else {
             // 可选 "rand"(随机), "switch"(顺序)
             fetch(`${this.apiPath}switch_textures/?id=${modelId}-${modelTexturesId}`)
