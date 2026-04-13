@@ -51,7 +51,7 @@
 	"layout":
 	{
 		"image_height": 800,
-		"image_center_y": -0.15,
+		"image_center_y": 0.15,
 		"anchor_center_y": 0,
 		"head_center_y": 0.5,
 		"time_to_max_speed": 0.08,
