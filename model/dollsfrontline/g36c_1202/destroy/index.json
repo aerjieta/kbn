@@ -6,8 +6,8 @@
 	],
         "layout": {
         "center_x": 0.0,
-        "center_y": 0.0,
-        "width": 0.6
+        "center_y": 0.2,
+        "width": 1.3
         },
 	"motions":{
 		"idle":[
