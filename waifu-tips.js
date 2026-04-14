@@ -9,19 +9,15 @@
 
     function showTips(message, duration, priority) {
         if (!message || (sessionStorage.getItem("waifu-text") && sessionStorage.getItem("waifu-text") > priority)) return;
-
         if (tipTimer) {
             clearTimeout(tipTimer);
             tipTimer = null;
         }
-
         message = randomText(message);
         sessionStorage.setItem("waifu-text", priority);
-
         const tipsElement = document.getElementById("waifu-tips");
         tipsElement.innerHTML = message;
         tipsElement.classList.add("waifu-tips-active");
-
         tipTimer = setTimeout(() => {
             sessionStorage.removeItem("waifu-text");
             tipsElement.classList.remove("waifu-tips-active");
@@ -30,20 +26,9 @@
 
     class Live2DWidget {
         constructor(options) {
-            let { apiPath, cdnPath } = options;
-            let useCDN = false;
-
-            if (typeof cdnPath === "string") {
-                useCDN = true;
-                if (!cdnPath.endsWith("/")) cdnPath += "/";
-            } else {
-                if (typeof apiPath !== "string") throw "Invalid initWidget argument!";
-                if (!apiPath.endsWith("/")) apiPath += "/";
-            }
-
-            this.useCDN = useCDN;
-            this.apiPath = apiPath;
-            this.cdnPath = cdnPath;
+            let { cdnPath } = options;
+            if (typeof cdnPath !== "string") throw "CDN 模式需要有效的 cdnPath!";
+            this.cdnPath = cdnPath.endsWith("/") ? cdnPath : cdnPath + "/";
             this.modelList = null;
         }
 
@@ -57,55 +42,50 @@
             localStorage.setItem("modelTexturesId", textureId);
             if (tipMessage) showTips(tipMessage, 4000, 10);
 
-            if (this.useCDN) {
-                if (!this.modelList) await this.loadModelList();
-                const textures = this.modelList.models[modelId];
-                let textureName;
-                let textureIndex = parseInt(textureId) || 0;
-                if (Array.isArray(textures)) {
-                    textureName = textures[textureIndex] ? textures[textureIndex] : textures[0];
-                } else {
-                    textureName = textures;
-                }
-                loadlive2d("live2d", `${this.cdnPath}model/${textureName}/index.json`);
+            if (!this.modelList) await this.loadModelList();
+            const textures = this.modelList.models[modelId];
+            let textureName;
+            let textureIndex = parseInt(textureId) || 0;
+
+            if (Array.isArray(textures)) {
+                textureName = textures[textureIndex] ? textures[textureIndex] : textures[0];
             } else {
-                loadlive2d("live2d", `${this.apiPath}get/?id=${modelId}-${textureId}`);
+                textureName = textures;
             }
+            // 纯 CDN 加载逻辑
+            loadlive2d("live2d", `${this.cdnPath}model/${textureName}/index.json`);
         }
 
         async loadRandModel() {
             const modelId = localStorage.getItem("modelId");
             let textureId = parseInt(localStorage.getItem("modelTexturesId")) || 0;
 
-            if (this.useCDN) {
-                if (!this.modelList) await this.loadModelList();
-                const textures = this.modelList.models[modelId];
-                let nextTexture;
+            if (!this.modelList) await this.loadModelList();
+            const textures = this.modelList.models[modelId];
+            let nextTexture;
 
-                if (Array.isArray(textures)) {
-                    textureId = (textureId + 1) >= textures.length ? 0 : (textureId + 1);
-                    nextTexture = textures[textureId];
-                    localStorage.setItem("modelTexturesId", textureId);
-                    showTips("我的新衣服好看嘛？", 4000, 10);
-                } else {
-                    nextTexture = textures;
-                    localStorage.setItem("modelTexturesId", 0);
-                    showTips("我还没有其他衣服呢！", 4000, 10);
-                }
-                loadlive2d("live2d", `${this.cdnPath}model/${nextTexture}/index.json`);
+            if (Array.isArray(textures)) {
+                textureId = (textureId + 1) >= textures.length ? 0 : (textureId + 1);
+                nextTexture = textures[textureId];
+                localStorage.setItem("modelTexturesId", textureId);
+                showTips("我的新衣服好看嘛？", 4000, 10);
+            } else {
+                nextTexture = textures;
+                localStorage.setItem("modelTexturesId", 0);
+                showTips("我还没有其他衣服呢！", 4000, 10);
             }
+            loadlive2d("live2d", `${this.cdnPath}model/${nextTexture}/index.json`);
         }
 
         async loadOtherModel() {
-            let modelId = localStorage.getItem("modelId");
-            if (this.useCDN) {
-                if (!this.modelList) await this.loadModelList();
-                const nextModelId = ++modelId >= this.modelList.models.length ? 0 : modelId;
-                this.loadModel(nextModelId, 0, this.modelList.messages[nextModelId]);
-            }
+            let modelId = parseInt(localStorage.getItem("modelId")) || 0;
+            if (!this.modelList) await this.loadModelList();
+            const nextModelId = ++modelId >= this.modelList.models.length ? 0 : modelId;
+            this.loadModel(nextModelId, 0, this.modelList.messages[nextModelId]);
         }
     }
 
+    // 工具函数保持不变...
     const toolFunctions = {
         hitokoto: {
             icon: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path d="M512 240c0 114.9-114.6 208-256 208c-37.1 0-72.3-6.4-104.1-17.9c-11.9 8.7-31.3 20.6-54.3 30.6C73.6 471.1 44.7 480 16 480c-6.5 0-12.3-3.9-14.8-9.9c-2.5-6-1.1-12.8 3.4-17.4l0 0 0 0 0 0 0 0 .3-.3c.3-.3 .7-.7 1.3-1.4c1.1-1.2 2.8-3.1 4.9-5.7c4.1-5 9.6-12.4 15.2-21.6c10-16.6 19.5-38.4 21.4-62.9C17.7 326.8 0 285.1 0 240C0 125.1 114.6 32 256 32s256 93.1 256 208z"/></svg>',
@@ -160,7 +140,6 @@
     function initWidgetCore(config) {
         const widget = new Live2DWidget(config);
 
-        // 【重点修复】：增加 tipsData 参数，函数内部所有消息读取改为 tipsData
         function initMessages(tipsData) {
             let isActive = false;
             let idleTimer = null;
@@ -182,13 +161,11 @@
             }, 1000);
 
             const welcomeMsg = (() => {
-                if (location.pathname === "/") {
-                    for (let { hour, text } of tipsData.time) {
-                        const now = new Date();
-                        const startHour = hour.split("-")[0];
-                        const endHour = hour.split("-")[1] || startHour;
-                        if (startHour <= now.getHours() && now.getHours() <= endHour) return text;
-                    }
+                for (let { hour, text } of tipsData.time) {
+                    const now = new Date();
+                    const startHour = hour.split("-")[0];
+                    const endHour = hour.split("-")[1] || startHour;
+                    if (startHour <= now.getHours() && now.getHours() <= endHour) return text;
                 }
                 const pageTitle = `欢迎阅读<span>「${document.title.split(" - ")[0]}」</span>`;
                 if (document.referrer !== "") {
@@ -203,7 +180,6 @@
             })();
             showTips(welcomeMsg, 7000, 11);
 
-            // 鼠标悬浮提示
             window.addEventListener("mouseover", (e) => {
                 for (let { selector, text } of tipsData.mouseover) {
                     if (e.target.matches(selector)) {
@@ -214,7 +190,6 @@
                 }
             });
 
-            // 点击提示
             window.addEventListener("click", (e) => {
                 for (let { selector, text } of tipsData.click) {
                     if (e.target.matches(selector)) {
@@ -267,11 +242,9 @@
             }
         })();
 
-        // 【重点修复】：fetch 拿到数据后传给 initMessages
         (function loadDefaultModel() {
-            let modelId = 4;
-            let textureId = 15;
-            widget.loadModel(modelId, textureId);
+            // 这里保留你固定的 4-15 模型
+            widget.loadModel(4, 15);
             fetch(config.waifuPath)
                 .then(res => res.json())
                 .then(data => {
@@ -280,8 +253,8 @@
         })();
     }
 
-    window.initWidget = function (options, legacyApiPath) {
-        if (typeof options === "string") options = { waifuPath: options, apiPath: legacyApiPath };
+    window.initWidget = function (options) {
+        // 简化后的初始化参数，只需传入 options 即可
         document.body.insertAdjacentHTML("beforeend", `<div id="waifu-toggle"><span>看板娘</span></div>`);
         const toggleBtn = document.getElementById("waifu-toggle");
         toggleBtn.addEventListener("click", () => {
