@@ -7,7 +7,7 @@
         "layout": {
         "center_x": 0.0,
         "center_y": 0.0,
-        "width": 0.85
+        "width": 1.5
         },
 	"motions":{
 		"flick_head":[
@@ -48,13 +48,5 @@
 		"activity":[
 			{"file":"motions/idle.mtn"}
 		]
-	},
-	"layout":
-	{
-		"image_height": 1136,
-		"image_center_y": 0.5,
-		"head_center_y": 0.25,
-		"time_to_max_speed": 0.08,
-		"face_max_angle": 20
 	}
 }
