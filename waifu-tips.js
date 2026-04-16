@@ -244,7 +244,7 @@
 
         (function loadDefaultModel() {
             // 这里保留你固定的 4-15 模型
-            widget.loadModel(4, 15);
+            widget.loadModel(4, 16);
             fetch(config.waifuPath)
                 .then(res => res.json())
                 .then(data => {
