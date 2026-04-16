@@ -152,13 +152,13 @@
 				},
 				{
 					"id":"PARAM_BODY_ANGLE_Z",
-					"ptype":"x",
+					"ptype":"angle",
 					"scale":0.5,
 					"weight":0.5
 				},
 				{
 					"id":"PARAM_ANGLE_Z",
-					"ptype":"x",
+					"ptype":"angle",
 					"scale":0.5,
 					"weight":0.6
 				}
