@@ -23,7 +23,7 @@
             tipsElement.classList.remove("waifu-tips-active");
         }, duration);
     }
-
+    window.showMessage = showTips;
     class Live2DWidget {
         constructor(options) {
             let { cdnPath } = options;
